@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import CardDeck from './features/CardDeck/CardDeck'
+import "./GameSpace.css"
 
 function GameSpace({webSocket}){
     const [incomingMessage, setIncomingMessage] = useState("");
@@ -20,11 +22,16 @@ function GameSpace({webSocket}){
 
     return (
         <>
-        <form>
-            <input type='text' onChange={handleInputChange}></input>
-        </form>
-        <button onClick={sendMessage}>Send</button>
-        <p>{"Last message: " + incomingMessage}</p>
+            <h1>spoons coming soon</h1>
+            <form>
+                <input type='text' onChange={handleInputChange}></input>
+            </form>
+            <button onClick={sendMessage}>Send</button>
+            <p>{"Last message: " + incomingMessage}</p>
+    
+            <div class=".bottom-div">
+                <CardDeck />
+            </div>
         </>
     )
 }

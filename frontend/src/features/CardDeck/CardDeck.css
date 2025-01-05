@@ -1,0 +1,12 @@
+.deck{
+    width: 100%;
+    display: flex;
+    text-align: center;
+}
+
+.card{
+    width: 12vw;
+    height: 18vw;
+    background-color:rgb(255,255,255);
+    margin-inline: 10px;
+}

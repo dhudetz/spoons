@@ -1,0 +1,19 @@
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.bottom-div {
+  position: fixed; /* Sticks to a specific position relative to the viewport */
+  bottom: 0; /* Pushes the div to the bottom */
+  left: 0; /* Aligns it to the left (optional) */
+  width: 100%; /* Optional: Makes the div span the full width */
+  background-color: #f0f0f0; /* Optional: Add a background for visibility */
+  text-align: center; /* Optional: Center text content */
+  padding: 10px; /* Optional: Add some padding */
+}
+
+p {
+  font-size: 20pt;
+  color: rgb(150,2,250);
+}
