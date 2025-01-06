@@ -1,0 +1,9 @@
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+p {
+  font-size: 20pt;
+  color: rgb(150,2,250);
+}

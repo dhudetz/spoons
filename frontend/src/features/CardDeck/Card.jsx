@@ -5,7 +5,7 @@ function Card(){
 
     return(
         <>
-        <div class="card">
+        <div className="card">
             <p>A♠</p>
         </div>
         </>

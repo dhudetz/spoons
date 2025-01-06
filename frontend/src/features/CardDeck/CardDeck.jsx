@@ -5,7 +5,7 @@ import Card from './Card.jsx'
 function CardDeck(){
     return(
         <>
-        <div class='deck'>
+        <div className='deck'>
             <Card/>
             <Card/>
             <Card/>
