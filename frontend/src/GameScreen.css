@@ -1,0 +1,12 @@
+.player-list-item {
+    list-style-type: none; /* Remove the default bullet */
+    position: relative; /* Allow positioning for custom bullet */
+    padding-left: 1.5em; /* Add space for the custom bullet */
+}
+
+.player-list-item::before {
+    content: "🐵 "; /* Replace this symbol with any desired character or emoji */
+    left: 0;
+    color: #007BFF; /* Optional: Change the bullet color */
+    font-size: 1.2em; /* Optional: Adjust the bullet size */
+}

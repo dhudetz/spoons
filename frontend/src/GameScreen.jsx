@@ -1,11 +1,26 @@
-import React from 'react';
-import './GameScreen.css'
+import React, { useState, useEffect } from 'react';
+import './GameScreen.css';
 
-function GameScreen() {
+function GameScreen({ serverMessage }) {
+    const [playerList, setPlayerList] = useState([]);
+
+    useEffect(() => {
+        console.log(serverMessage)
+        if(serverMessage.messageType == "gameState")
+            setPlayerList(serverMessage.players)
+    }, [serverMessage]); // Re-run effect when webSocketRef changes
+
     return (
         <div>
-            <h1>Welcome to the Game!</h1>
-            <p>This is where your game interface will go.</p>
+            <h1>cum lobby</h1>
+            <p>Wait for fellow cum brains, then click 'Start Game'.</p>
+            <h3>Players:</h3>
+            <ul>
+                {playerList.map((player, index) => (
+                    <li className='player-list-item' key={index}>{player}</li>
+                ))}
+            </ul>
+            <button>Start Game</button>
         </div>
     );
 }

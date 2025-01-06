@@ -3,6 +3,11 @@
   margin: 0 auto;
 }
 
+.error {
+  font-size: 10pt;
+  color: rgb(255,2,20);
+}
+
 p {
   font-size: 20pt;
   color: rgb(150,2,250);
