@@ -12,7 +12,7 @@ class Player:
         self.username = new_username
 
 
-MAX_USERNAME_LENGTH = 20
+MAX_USERNAME_LENGTH = 30
 
 players = {}
 user_connections = set()
@@ -24,9 +24,9 @@ async def attempt_create_player(connection, username):
     if username in usernames:
         await send_message_to_user(connection, "error", "username already exists! be more original!")
     elif username == "":
-        await send_message_to_user(connection, "error", "username cannot be empty! obviously!")
+        await send_message_to_user(connection, "error", "username cannot be empty! dumbaaaah!")
     elif len(username) > MAX_USERNAME_LENGTH:
-        await send_message_to_user(connection, "error", f"username cannot be longer than {MAX_USERNAME_LENGTH} characters, you greedy fuck!")
+        await send_message_to_user(connection, "error", f"username cannot be longer than {MAX_USERNAME_LENGTH} characters, you greedy goblin!")
     elif connection.id in players:  # Username change
         old_username = players[connection.id].username
         usernames.remove(old_username)

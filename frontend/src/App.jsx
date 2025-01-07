@@ -65,7 +65,7 @@ function App() {
     return (
         <>
             <div id="login-screen">
-                <h1>cum brains spoons</h1>
+                <h1 className="title">cum brains spoons</h1>
                 <form onSubmit={(e) => e.preventDefault()}>
                     <h2>choose your username:</h2>
                     <input 

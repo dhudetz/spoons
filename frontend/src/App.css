@@ -3,6 +3,39 @@
   margin: 0 auto;
 }
 
+@keyframes fadeInAndScale {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+    color: #333; /* Initial color */
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.1);
+    color: #999; /* Transition color */
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+    color: #fff; /* Final color */
+  }
+}
+
+.title {
+  font-family: 'Arial', sans-serif;
+  font-size: 36px;
+  font-weight: bold;
+  text-align: center;
+  text-transform: capitalize;
+  margin: 20px 0;
+  line-height: 1.5;
+
+  /* Animation properties */
+  animation: fadeInAndScale 0.8s ease-in-out;
+}
+
+
+
 .error {
   font-size: 10pt;
   color: rgb(255,2,20);

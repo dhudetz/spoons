@@ -12,7 +12,7 @@ function GameScreen({ serverMessage }) {
 
     return (
         <div>
-            <h1>cum lobby</h1>
+            <h1 className="title">cum lobby</h1>
             <p>Wait for fellow cum brains, then click 'Start Game'.</p>
             <h3>Players:</h3>
             <ul>
