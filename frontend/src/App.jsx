@@ -28,6 +28,7 @@ function App() {
             }
             else if(messageData.messageType === "usernameCreated" || messageData.messageType === "usernameChange") {
                 console.log("Username accepted/changed!");
+                setErrorMessage("");
                 toggleScreens();
             }
         });

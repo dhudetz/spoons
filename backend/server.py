@@ -7,8 +7,8 @@ from spoons_game import Player,SpoonsGame
 class GameServer():
 
     MAX_USERNAME_LENGTH = 30
-    players = {}
     user_connections = set()
+    players = {}
     usernames = set()
     game = None
 
@@ -22,7 +22,7 @@ class GameServer():
         elif len(username) > self.MAX_USERNAME_LENGTH:
             await self.send_message_to_user(connection, "error", f"username cannot be longer than {self.MAX_USERNAME_LENGTH} characters, you greedy goblin!")
         elif self.game:
-            await self.send_message_to_user(connection, "error", f"Game has already started!")
+            await self.send_message_to_user(connection, "error", f"Game has already started! Wait until the next one to join!")
         elif connection.id in self.players:  # Username change
             old_username = self.players[connection.id].username
             self.usernames.remove(old_username)
@@ -31,11 +31,11 @@ class GameServer():
             await self.send_message_to_user(connection, "usernameChange", f"Username changed from {old_username} to {username}")
             success = True
         else:  # New user
-            self.players[connection.id] = Player(connection, username)
+            self.players[connection.id] = Player(username)
             self.usernames.add(username)
             await self.send_message_to_user(connection, "usernameCreated", f"Welcome, {username}!")
             success = True
-        print(f"Current users: {[self.players[p].username for p in self.players]}")
+        print(f"Current users: {self.usernames}")
         if success:
             await self.broadcast_game_state()
 
@@ -58,17 +58,25 @@ class GameServer():
         await connection.send(message)
 
 
+    async def get_game_state(self):
+        game_state = {"messageType":"gameState", "players":[player.to_dict() for player in self.players.values()]}
+        game_started = False
+        if self.game:
+            game_properties = self.game.get_state_properties()
+            game_state.update(game_properties)
+            game_started = True
+        game_state["started"] = game_started
+        return game_state
+
+
     async def broadcast_game_state(self):
         """Broadcast a game state to all connected users."""
-        message_content = {"messageType":"gameState", "players":list(self.usernames)}
-        if self.game:
-            game_state = self.game.get_state_properties()
-            message_content.update(game_state)
+        message_content = await self.get_game_state()
         broadcast_message = json.dumps(message_content)
         websockets.broadcast(self.user_connections, broadcast_message)
 
 
-    async def process_message(self, connection, message):
+    async def process_incoming_message(self, connection, message):
         """Process incoming WebSocket messages."""
         print(f"message received: {message}")
         try:
@@ -91,7 +99,7 @@ class GameServer():
             print(f"New client connected. Total connections: {len(self.user_connections)}")
 
             async for message in connection:
-                await self.process_message(connection, message)
+                await self.process_incoming_message(connection, message)
         except websockets.exceptions.ConnectionClosed:
             print("Client connection closed unexpectedly")
         finally:

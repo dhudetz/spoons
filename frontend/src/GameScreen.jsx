@@ -20,7 +20,7 @@ function GameScreen({ serverMessage, sendMessage, errorMessage}) {
             <h3>Players:</h3>
             <ul>
                 {playerList.map((player, index) => (
-                    <li className='player-list-item' key={index}>{player}</li>
+                    <li className='player-list-item' key={index}>{player.username}</li>
                 ))}
             </ul>
             <button onClick={handleStartGame}>Start Game</button>
