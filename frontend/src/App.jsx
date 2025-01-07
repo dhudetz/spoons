@@ -3,6 +3,7 @@ import GameScreen from './GameScreen';
 import './App.css';
 
 function App() {
+    console.log("app rerendered.")
     const [serverMessage, setServerMessage] = useState("")
     const [username, setUsername] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
@@ -25,7 +26,7 @@ function App() {
                 setErrorMessage(messageData.payload)
                 setUsername("");
             }
-            else if(messageData.messageType === "username_created" || messageData.messageType === "username_change") {
+            else if(messageData.messageType === "usernameCreated" || messageData.messageType === "usernameChange") {
                 console.log("Username accepted/changed!");
                 toggleScreens();
             }
@@ -44,20 +45,23 @@ function App() {
         if (gameScreenElement.style.display === "none") {
             gameScreenElement.style.display = "block";
             loginScreenElement.style.display = "none";
-          } else {
+        } else {
             gameScreenElement.style.display = "none";
             loginScreenElement.style.display = "block";
-          }
-
+        }
     }
 
-    function sendUsername() {
+    function sendMessage(messageType, payload){
         if (webSocketRef.current && webSocketRef.current.readyState === WebSocket.OPEN) {
-            let outgoingMessage = JSON.stringify({ messageType: "username", payload: username });
+            let outgoingMessage = JSON.stringify({ messageType: messageType, payload: payload });
             webSocketRef.current.send(outgoingMessage);
         } else {
             console.error("WebSocket is not open. Unable to send message.");
         }
+    }
+
+    function sendUsername(){
+        sendMessage("username", username)
     }
 
     const handleUsernameChange = (event) => setUsername(event.target.value);
@@ -79,7 +83,7 @@ function App() {
                 <button onClick={sendUsername}>Enter Game</button>
             </div>
             <div id="game-screen">
-                <GameScreen serverMessage = {serverMessage}/>
+                <GameScreen serverMessage = {serverMessage} sendMessage = {sendMessage} errorMessage={errorMessage}/>
             </div>
 
         </>
