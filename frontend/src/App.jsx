@@ -53,12 +53,11 @@ function App() {
     }
 
     function sendMessage(messageType, payload){
-        if (webSocketRef.current && webSocketRef.current.readyState === WebSocket.OPEN) {
-            let outgoingMessage = JSON.stringify({ messageType: messageType, payload: payload });
-            webSocketRef.current.send(outgoingMessage);
-        } else {
+        webSocketRef.current || webSocketRef.current.readyState === WebSocket.OPEN
             console.error("WebSocket is not open. Unable to send message.");
-        }
+
+        let outgoingMessage = JSON.stringify({ messageType: messageType, payload: payload });
+        webSocketRef.current.send(outgoingMessage);
     }
 
     function sendUsername(){
