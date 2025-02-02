@@ -9,8 +9,10 @@ class GameServer():
     """A server that runs a Game."""
     
     # Configuration
-    LOG_LEVEL = logging.INFO
+    LOG_LEVEL = logging.DEBUG
     MAX_USERNAME_LENGTH = 30
+    MIN_PLAYERS = 1
+    MAX_PLAYERS = 2
 
     # Message Types
     INCOMING_MESSAGE_TYPES=[
@@ -70,6 +72,13 @@ class GameServer():
                 connection,
                 "error",
                 f"username cannot be longer than {self.MAX_USERNAME_LENGTH} characters, you greedy goblin!"
+            )
+        # Too many players
+        elif len(self.players) >= self.MAX_PLAYERS:
+            await self.send_message_to_user(
+                connection,
+                "error", 
+                f"Too many players in the game!"
             )
         # Game has already started
         elif self.game:
@@ -132,7 +141,7 @@ class GameServer():
         await self.broadcast_game_state()
 
     async def attempt_start_game(self, connection: ServerConnection) -> None:
-        """Start the game if there is not already one and if players > 2.
+        """Start the game if there is not already one and if players > MIN_PLAYERS.
         
         Args: 
             connection: connection of the user attempting to start the game
@@ -140,7 +149,7 @@ class GameServer():
         """
         if self.game: # Game already exists
             await self.send_message_to_user(connection, "error", "Game already started!")
-        elif len(self.players) < 2: # Not enough players
+        elif len(self.players) < self.MIN_PLAYERS: # Not enough players
             await self.send_message_to_user(connection, "error", "Failed to start game. Not enough players!")
         else: # Start the game
             self.game = SpoonsGame(self.players)
@@ -260,7 +269,7 @@ class GameServer():
         """
         try:
             self.connections.add(connection)
-            self.logger.debug(f"New client connected. Total connections: {len(self.connections)}")
+            self.logger.debug(f"New client connected. {connection.remote_address} Total connections: {len(self.connections)}")
 
             async for message in connection:
                 await self.process_incoming_message(connection, message)
@@ -268,7 +277,8 @@ class GameServer():
             self.logger.info("Client connection closed unexpectedly")
         finally:
             self.connections.remove(connection)
-            await self.remove_player(connection)
+            if connection.id in self.players:
+                await self.remove_player(connection)
             self.logger.debug(f"Client disconnected. Total connections: {len(self.connections)}")
             await self.broadcast_game_state()
 
