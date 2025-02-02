@@ -143,7 +143,10 @@ class GameServer:
         self.logger.info(f"{self.players[connection.id].username} left.")
         self.usernames.remove(self.players[connection.id].username)
         self.players.pop(connection.id, None)
-        self.logger.debug(f"Current player usernames: {self.usernames}")
+        if len(self.usernames) == 0:
+            self.logger.debug("No current users.")
+        else:
+            self.logger.debug(f"Current player usernames: {self.usernames}")
 
         await self.broadcast_game_state()
 
