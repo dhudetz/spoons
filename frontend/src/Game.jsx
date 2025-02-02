@@ -12,7 +12,7 @@ function Game({ serverMessage, sendMessage, errorMessage, showScreen}) {
     return (
         <div>
             <h1 className="title">GAME SCREEN</h1>
-            <p>Wait for fellow cum brains, then click 'Start Game'.</p>
+            <p>The game goes here.</p>
         </div>
     );
 }
