@@ -19,9 +19,7 @@ function App() {
         return () => {
             if (webSocketRef.current) {
                 webSocketRef.current.close();
-                webSocketRef.current.removeEventListener("open");
-                webSocketRef.current.removeEventListener("message");
-                webSocketRef.current.removeEventListener("close");
+                webSocketRef.current = null
             }
         };
     }, []);
@@ -29,10 +27,15 @@ function App() {
     function createConnection(){
         const WEBSOCKET_URL = `ws://${window.location.hostname}:8765`;
         
-        if(!webSocketRef.current){
-            webSocketRef.current = new WebSocket(WEBSOCKET_URL);
-            webSocketRef.current.addEventListener("open", (event) => {console.log("Connected!")});
-        }
+        // Open server connection if there is not one already.
+        if(webSocketRef.current) return;
+        webSocketRef.current = new WebSocket(WEBSOCKET_URL);
+
+        webSocketRef.current.addEventListener("open", (event) => {
+            setErrorMessage("");
+            console.log("Connected!")
+        });
+        
 
         webSocketRef.current.addEventListener("message", (event) => {
             let messageData = JSON.parse(event.data);
@@ -52,6 +55,7 @@ function App() {
 
         webSocketRef.current.addEventListener("close", (event) => {
             console.log('Websocket failed:', event);
+            setErrorMessage("Cannot connect to server.")
             webSocketRef.current = null
 
             showScreen('login')

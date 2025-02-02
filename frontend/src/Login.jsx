@@ -9,7 +9,7 @@ function Login({ serverMessage, sendMessage, errorMessage, showScreen}) {
         console.log(serverMessage)
         if(serverMessage.messageType == "gameState")
             setPlayerList(serverMessage.players)
-    }, [serverMessage]); // Re-run effect when webSocketRef changes
+    }, [serverMessage]);
 
     function sendUsername(){
         sendMessage("username", username)
@@ -19,7 +19,7 @@ function Login({ serverMessage, sendMessage, errorMessage, showScreen}) {
 
     return (
         <div id="login-screen">
-            <h1 className="title">cum brains spoons</h1>
+            <h1 className="extreme-title">cum brains spoons</h1>
             <form onSubmit={(e) => e.preventDefault()}>
                 <h2>choose your username:</h2>
                 <input 

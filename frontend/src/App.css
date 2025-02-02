@@ -3,6 +3,29 @@
   margin: 0 auto;
 }
 
+.error {
+  font-size: 10pt;
+  color: rgb(255,2,20);
+}
+
+p {
+  font-size: 20pt;
+  color: rgb(150,2,250);
+}
+
+.title {
+  font-family: 'Arial', sans-serif;
+  font-size: 36px;
+  font-weight: bold;
+  text-align: center;
+  text-transform: capitalize;
+  margin: 20px 0;
+  line-height: 1.5;
+
+  /* Animation properties */
+  animation: fadeInAndScale 0.8s ease-in-out;
+}
+
 @keyframes fadeInAndScale {
   0% {
     opacity: 0;
@@ -21,27 +44,57 @@
   }
 }
 
-.title {
-  font-family: 'Arial', sans-serif;
-  font-size: 36px;
-  font-weight: bold;
+.extreme-title {
+  font-family: 'Orbitron', sans-serif; /* Cool futuristic font */
+  font-size: 48px;
+  font-weight: 900;
   text-align: center;
-  text-transform: capitalize;
-  margin: 20px 0;
-  line-height: 1.5;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin: 30px 0;
+  color: #fff;
+  background: linear-gradient(90deg, #ff0080, #ffcc00, #00eaff, #ff0080);
+  background-size: 400% 400%;
 
-  /* Animation properties */
-  animation: fadeInAndScale 0.8s ease-in-out;
+  /* Standard and vendor-prefixed background-clip */
+  -webkit-background-clip: text;
+  -moz-background-clip: text;
+  -ms-background-clip: text;
+  -o-background-clip: text;
+  background-clip: text;
+  
+  -webkit-text-fill-color: transparent;
+  animation: fadeInAndGlitch 1s ease-in-out, glowShift 3s infinite alternate;
 }
 
-
-
-.error {
-  font-size: 10pt;
-  color: rgb(255,2,20);
+@keyframes glowShift {
+  0% {
+    text-shadow: 0px 0px 10px rgba(255, 0, 255, 0.8), 0px 0px 20px rgba(255, 255, 0, 0.6);
+  }
+  100% {
+    text-shadow: 0px 0px 20px rgba(0, 255, 255, 0.8), 0px 0px 30px rgba(255, 255, 255, 0.9);
+  }
 }
 
-p {
-  font-size: 20pt;
-  color: rgb(150,2,250);
+@keyframes fadeInAndGlitch {
+  0% {
+    opacity: 0;
+    transform: scale(0.8) rotate(-2deg);
+    text-shadow: none;
+  }
+  30% {
+    opacity: 0.5;
+    transform: scale(1.1) rotate(2deg);
+    text-shadow: 2px 2px 10px rgba(255, 0, 150, 0.8);
+  }
+  60% {
+    opacity: 0.9;
+    transform: scale(1) rotate(-1deg);
+    text-shadow: -2px -2px 15px rgba(0, 255, 200, 0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0);
+    text-shadow: 0px 0px 20px rgba(255, 255, 255, 1);
+  }
 }

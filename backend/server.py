@@ -8,14 +8,18 @@ import logging
 class GameServer():
     """A server that runs a Game."""
     
+    # Configuration
     LOG_LEVEL = logging.INFO
+    MAX_USERNAME_LENGTH = 30
 
+    # Message Types
     INCOMING_MESSAGE_TYPES=[
         'username',
+        'resetUser',
         'startGame',
+        'endGame',
         'gameMessage',
     ]
-
     OUTGOING_MESSAGE_TYPES=[
         'error',
         'usernameChange',
@@ -23,8 +27,8 @@ class GameServer():
         'gameState',
     ]
 
-    MAX_USERNAME_LENGTH = 30
-    user_connections = set()
+    # Data
+    connections = set()
     players = {}
     usernames = set()
     game = None
@@ -107,21 +111,25 @@ class GameServer():
         self.usernames.add(username)
         await self.send_message_to_user(connection, "usernameCreated", f"Welcome, {username}!")
         self.logger.info(f"{username} has joined.")
-        self.logger.debug(f"Current users: {self.usernames}")
+        self.logger.debug(f"Current player usernames: {self.usernames}")
 
-    def disconnect_player(self, connection: ServerConnection) -> None:
+    async def remove_player(self, connection: ServerConnection) -> None:
         """Disconnects a player with connection.
         
         Args:
             connection: player's connection
         
         """
-        self.user_connections.remove(connection)
-        if connection.id in self.players:
-            self.logger.info(f"{self.players[connection.id].username} left.")
-            self.usernames.remove(self.players[connection.id].username)
-            self.players.pop(connection.id, None)
-        self.logger.debug(f"Current users: {self.usernames}")
+        if connection.id not in self.players:
+            self.logger.error(f"There is no player to remove for connection {connection.id}.")
+            return
+
+        self.logger.info(f"{self.players[connection.id].username} left.")
+        self.usernames.remove(self.players[connection.id].username)
+        self.players.pop(connection.id, None)
+        self.logger.debug(f"Current player usernames: {self.usernames}")
+
+        await self.broadcast_game_state()
 
     async def attempt_start_game(self, connection: ServerConnection) -> None:
         """Start the game if there is not already one and if players > 2.
@@ -130,14 +138,30 @@ class GameServer():
             connection: connection of the user attempting to start the game
         
         """
-        if self.game != None:
+        if self.game: # Game already exists
             await self.send_message_to_user(connection, "error", "Game already started!")
-        elif len(self.players) < 2:
+        elif len(self.players) < 2: # Not enough players
             await self.send_message_to_user(connection, "error", "Failed to start game. Not enough players!")
-        else:
+        else: # Start the game
             self.game = SpoonsGame(self.players)
-            await self.broadcast_game_state()
             self.logger.info("Starting game!")
+            await self.broadcast_game_state()
+
+    async def attempt_end_game(self, connection: ServerConnection) -> None:
+        """End the game if there is one started.
+        
+        Args: 
+            connection: connection of the user attempting to end the game
+        
+        """
+        if not self.game: # If the game has not started
+            await self.send_message_to_user(connection, "error", "Cannot end game that has not started!")
+            return
+        
+        # End the game and inform all connections.
+        self.game = None
+        await self.broadcast_game_state()
+        self.logger.info("Ended game!")
 
     async def send_message_to_user(self, connection: ServerConnection, message_type: str, payload: str) -> None:
         """Send a message to a specific user.
@@ -185,37 +209,47 @@ class GameServer():
             
         """
         broadcast_message = json.dumps(message_content)
-        broadcast(self.user_connections, broadcast_message)
+        broadcast(self.connections, broadcast_message)
 
-    async def process_incoming_message(self, connection: ServerConnection, message: dict) -> None:
-        """Process incoming user message.
+    async def process_game_message(self, connection: ServerConnection, message: dict) -> None:
+        """Process a message pertaining a player in the Game.
         
         Args:
             connection: connection that the message came from
             message: dictionary of the message content
 
         """
-        try:
-            game_message = json.loads(message)
+        if not self.game:
+            await self.send_message_to_user(connection, "error", "Not accepting game messages!")
+            self.logger.error(f"Game message received from {connection.id} without a game started.")
+            return
+        # TODO: add game message handling
 
-            message_type = game_message['messageType']
-            if message_type not in self.INCOMING_MESSAGE_TYPES: # bad message type
-                self.logger.error(f"Invalid message type received from connection {connection}.")
-                await self.send_message_to_user(connection, "error", "Unknown message type.")
-            
-            if message_type == "username":
-                await self.attempt_create_player(connection, game_message["payload"])
-            elif message_type == "startGame":
-                await self.attempt_start_game(connection)
-            elif message_type == "gameMessage":
-                if not self.game:
-                    await self.send_message_to_user(connection, "error", "Not accepting game messages!")
-                    self.logger.error(f"Game message received from {connection} without a game started.")
-                    return
-                #self.game.process_game_message()
-                
-        except (json.JSONDecodeError, KeyError):
-            await self.send_message_to_user(connection, "error", "Invalid message format.")
+    async def process_incoming_message(self, connection: ServerConnection, message: dict) -> None:
+        """Process general incoming user message.
+        
+        Args:
+            connection: connection that the message came from
+            message: dictionary of the message content
+
+        """
+        incoming_message = json.loads(message)
+
+        message_type = incoming_message['messageType']
+        if message_type not in self.INCOMING_MESSAGE_TYPES: # bad message type
+            self.logger.error(f"Invalid message type received from connection {connection.id}")
+            await self.send_message_to_user(connection, "error", "Unknown message type.")
+        
+        if message_type == "username":
+            await self.attempt_create_player(connection, incoming_message["payload"])
+        elif message_type == "resetUser":
+            await self.remove_player(connection)
+        elif message_type == "startGame":
+            await self.attempt_start_game(connection)
+        elif message_type == "endGame":
+            await self.attempt_end_game(connection)
+        elif message_type == "gameMessage":
+            await self.process_game_message(connection, incoming_message)
 
     async def handle_client(self, connection: ServerConnection) -> None:
         """Handle a new individual client connection.
@@ -225,16 +259,17 @@ class GameServer():
         
         """
         try:
-            self.user_connections.add(connection)
-            self.logger.debug(f"New client connected. Total connections: {len(self.user_connections)}")
+            self.connections.add(connection)
+            self.logger.debug(f"New client connected. Total connections: {len(self.connections)}")
 
             async for message in connection:
                 await self.process_incoming_message(connection, message)
         except websockets.exceptions.ConnectionClosed:
             self.logger.info("Client connection closed unexpectedly")
         finally:
-            self.disconnect_player(connection)
-            self.logger.debug(f"Client disconnected. Total connections: {len(self.user_connections)}")
+            self.connections.remove(connection)
+            await self.remove_player(connection)
+            self.logger.debug(f"Client disconnected. Total connections: {len(self.connections)}")
             await self.broadcast_game_state()
 
 

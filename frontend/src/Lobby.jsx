@@ -20,9 +20,14 @@ function Lobby({ serverMessage, sendMessage, errorMessage, showScreen}) {
         sendMessage("startGame","");
     };
 
+    const handleBackToLobby = (event) => {
+        sendMessage("resetUser","");
+        showScreen("login")
+    };
+
     return (
         <div>
-            <h1 className="title">cum lobby</h1>
+            <h1 className="extreme-title">cum lobby</h1>
             <p>Wait for fellow cum brains, then click 'Start Game'.</p>
             <p className='error'>{errorMessage}</p>
             <h3>Players:</h3>
@@ -32,6 +37,7 @@ function Lobby({ serverMessage, sendMessage, errorMessage, showScreen}) {
                 ))}
             </ul>
             <button onClick={handleStartGame}>Start Game</button>
+            <button onClick={handleBackToLobby}>Back</button>
         </div>
     );
 }
