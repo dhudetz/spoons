@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './Login.css';
 
-function Login({ serverMessage, sendMessage, errorMessage, showScreen}) {
+function Login({ serverMessage, sendMessage, setErrorMessage, errorMessage, showScreen}) {
     const [playerList, setPlayerList] = useState([]);
     const [username, setUsername] = useState("");
 

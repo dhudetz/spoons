@@ -2,17 +2,17 @@ from websockets import ServerConnection, serve, broadcast
 import websockets
 import asyncio
 import json
-from spoons_game import Player, SpoonsGame
+from games.spoons_game import SpoonsPlayer, SpoonsGame
 import logging
 
 class GameServer():
     """A server that runs a Game."""
     
     # Configuration
-    LOG_LEVEL = logging.DEBUG
-    MAX_USERNAME_LENGTH = 30
-    MIN_PLAYERS = 1
-    MAX_PLAYERS = 2
+    LOG_LEVEL = logging.INFO
+    MAX_USERNAME_LENGTH = 20
+    MIN_PLAYERS = 2
+    MAX_PLAYERS = 10
 
     # Message Types
     INCOMING_MESSAGE_TYPES=[
@@ -62,29 +62,26 @@ class GameServer():
         success = False
         # Username already exists
         if username in self.usernames:
-            await self.send_message_to_user(connection, "error", "username already exists! be more original!")
+            await self.send_error_to_user(connection, "username already exists! be more original!")
         # Username is empty
         elif username == "":
-            await self.send_message_to_user(connection, "error", "username cannot be empty! dumbaaaah!")
+            await self.send_error_to_user(connection,"username cannot be empty! dumbaaaah!")
         # Username too long
         elif len(username) > self.MAX_USERNAME_LENGTH:
-            await self.send_message_to_user(
+            await self.send_error_to_user(
                 connection,
-                "error",
                 f"username cannot be longer than {self.MAX_USERNAME_LENGTH} characters, you greedy goblin!"
             )
         # Too many players
         elif len(self.players) >= self.MAX_PLAYERS:
-            await self.send_message_to_user(
+            await self.send_error_to_user(
                 connection,
-                "error", 
                 f"Too many players in the game!"
             )
         # Game has already started
         elif self.game:
-            await self.send_message_to_user(
+            await self.send_error_to_user(
                 connection,
-                "error", 
                 f"Game has already started! Wait until the next one to join!"
             )
         # Username change
@@ -116,7 +113,7 @@ class GameServer():
             username: player's username
         
         """
-        self.players[connection.id] = Player(username)
+        self.players[connection.id] = SpoonsPlayer(username)
         self.usernames.add(username)
         await self.send_message_to_user(connection, "usernameCreated", f"Welcome, {username}!")
         self.logger.info(f"{username} has joined.")
@@ -148,9 +145,9 @@ class GameServer():
         
         """
         if self.game: # Game already exists
-            await self.send_message_to_user(connection, "error", "Game already started!")
+            await self.send_error_to_user(connection, "Game already started!")
         elif len(self.players) < self.MIN_PLAYERS: # Not enough players
-            await self.send_message_to_user(connection, "error", "Failed to start game. Not enough players!")
+            await self.send_error_to_user(connection, "Failed to start game. Not enough players!")
         else: # Start the game
             self.game = SpoonsGame(self.players)
             self.logger.info("Starting game!")
@@ -163,14 +160,29 @@ class GameServer():
             connection: connection of the user attempting to end the game
         
         """
-        if not self.game: # If the game has not started
-            await self.send_message_to_user(connection, "error", "Cannot end game that has not started!")
+        if not self.game: # No game yet
+            await self.send_error_to_user(connection, "Cannot end game that has not started!")
             return
         
         # End the game and inform all connections.
         self.game = None
         await self.broadcast_game_state()
         self.logger.info("Ended game!")
+
+    async def send_error_to_user(self, connection: ServerConnection, error_message: str) -> None:
+        """Send a error message to a specific user.
+        
+        Args:
+            connection: connection of the user to send message to
+            error_message: explanation of the error
+
+        """
+        await self.send_message_to_user(connection, "error", error_message)
+        if connection.id in self.players:
+            player = self.players[connection.id]
+            self.logger.debug(f"Player \'{player.username}\' error: {error_message}")
+        else:
+            self.logger.debug(f"Connection \'{connection.id}\' error: {error_message}")
 
     async def send_message_to_user(self, connection: ServerConnection, message_type: str, payload: str) -> None:
         """Send a message to a specific user.
@@ -194,10 +206,10 @@ class GameServer():
             dictionary of the current state of the game
 
         """
-        game_state = {"players":[player.to_dict() for player in self.players.values()]}
+        game_state = {"players":[player.properties for player in self.players.values()]}
         game_started = False
         if self.game:
-            game_properties = self.game.get_state_properties()
+            game_properties = self.game.get_state()
             game_state.update(game_properties)
             game_started = True
         game_state["started"] = game_started
@@ -229,7 +241,7 @@ class GameServer():
 
         """
         if not self.game:
-            await self.send_message_to_user(connection, "error", "Not accepting game messages!")
+            await self.send_error_to_user(connection, "Not accepting game messages!")
             self.logger.error(f"Game message received from {connection.id} without a game started.")
             return
         # TODO: add game message handling
@@ -247,7 +259,7 @@ class GameServer():
         message_type = incoming_message['messageType']
         if message_type not in self.INCOMING_MESSAGE_TYPES: # bad message type
             self.logger.error(f"Invalid message type received from connection {connection.id}")
-            await self.send_message_to_user(connection, "error", "Unknown message type.")
+            await self.send_error_to_user(connection, "Unknown message type.")
         
         if message_type == "username":
             await self.attempt_create_player(connection, incoming_message["payload"])
@@ -273,8 +285,8 @@ class GameServer():
 
             async for message in connection:
                 await self.process_incoming_message(connection, message)
-        except websockets.exceptions.ConnectionClosed:
-            self.logger.info("Client connection closed unexpectedly")
+        except websockets.exceptions.ConnectionClosed as e:
+            self.logger.error(f"Client connection closed unexpectedly: {e}")
         finally:
             self.connections.remove(connection)
             if connection.id in self.players:
@@ -282,10 +294,9 @@ class GameServer():
             self.logger.debug(f"Client disconnected. Total connections: {len(self.connections)}")
             await self.broadcast_game_state()
 
-
     async def initialize_server(self) -> None:
         """Initialize the game server."""
-        async with serve(self.handle_client, "0.0.0.0", 8765):
+        async with serve(self.handle_client, "0.0.0.0", 8765, ping_interval=None, ping_timeout=None):
             self.logger.info("Server running on ws://0.0.0.0:8765")
             await asyncio.Future()  # Keep the server running indefinitely
 

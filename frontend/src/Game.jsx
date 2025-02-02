@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './Game.css';
 import Lobby from './Lobby';
 
-function Game({ serverMessage, sendMessage, errorMessage, showScreen}) {
+function Game({ serverMessage, sendMessage, setErrorMessage, errorMessage, showScreen}) {
 
     useEffect(() => {
         console.log(serverMessage)

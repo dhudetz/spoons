@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import './Lobby.css';
+import React, { useState, useEffect } from 'react'
+import './Lobby.css'
 
-function Lobby({ serverMessage, sendMessage, errorMessage, showScreen}) {
-    const [playerList, setPlayerList] = useState([]);
+function Lobby({ serverMessage, sendMessage, setErrorMessage, errorMessage, showScreen}) {
+    const [playerList, setPlayerList] = useState([])
 
     useEffect(() => {
         console.log(serverMessage)
@@ -10,20 +10,21 @@ function Lobby({ serverMessage, sendMessage, errorMessage, showScreen}) {
         let gameStarted = serverMessage.started
         switch(messageType){
             case "gameState":
-                if (gameStarted) showScreen('game');
+                if (gameStarted) showScreen('game')
                 setPlayerList(serverMessage.players)
         }
         
-    }, [serverMessage]); // Re-run effect when webSocketRef changes
+    }, [serverMessage]) // Re-run effect when webSocketRef changes
 
     const handleStartGame = (event) => {
-        sendMessage("startGame","");
-    };
+        sendMessage("startGame","")
+    }
 
     const handleBackToLobby = (event) => {
-        sendMessage("resetUser","");
+        sendMessage("resetUser","")
+        setErrorMessage("")
         showScreen("login")
-    };
+    }
 
     return (
         <div>
@@ -39,7 +40,7 @@ function Lobby({ serverMessage, sendMessage, errorMessage, showScreen}) {
             <button onClick={handleStartGame}>Start Game</button>
             <button onClick={handleBackToLobby}>Back</button>
         </div>
-    );
+    )
 }
 
-export default Lobby;
+export default Lobby

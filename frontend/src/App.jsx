@@ -1,67 +1,67 @@
-import { useState, useEffect, useRef } from 'react';
-import Login from './Login';
-import Lobby from './Lobby';
-import Game from './Game';
-import './App.css';
+import { useState, useEffect, useRef } from 'react'
+import Login from './Login'
+import Lobby from './Lobby'
+import Game from './Game'
+import './App.css'
 
 function App() {
     console.log("app rerendered.")
-    const [connectionId, setConnectionId] = useState(null);
+    const [connectionId, setConnectionId] = useState(null)
     const [serverMessage, setServerMessage] = useState("")
-    const [errorMessage, setErrorMessage] = useState("");
-    const [currentScreen, setCurrentScreen] = useState("login");
-    const webSocketRef = useRef(null); 
+    const [errorMessage, setErrorMessage] = useState("")
+    const [currentScreen, setCurrentScreen] = useState("login")
+    const webSocketRef = useRef(null)
 
     useEffect(() => {
-        setTimeout(() => {createConnection();}, 1);
+        setTimeout(() => {createConnection();}, 1)
         
         // On exit
         return () => {
             if (webSocketRef.current) {
-                webSocketRef.current.close();
+                webSocketRef.current.close()
                 webSocketRef.current = null
             }
-        };
-    }, []);
+        }
+    }, [])
 
     function createConnection(){
-        const WEBSOCKET_URL = `ws://${window.location.hostname}:8765`;
+        const WEBSOCKET_URL = `ws://${window.location.hostname}:8765`
         
         // Open server connection if there is not one already.
-        if(webSocketRef.current) return;
-        webSocketRef.current = new WebSocket(WEBSOCKET_URL);
+        if(webSocketRef.current) return
+        webSocketRef.current = new WebSocket(WEBSOCKET_URL)
 
         webSocketRef.current.addEventListener("open", (event) => {
-            setErrorMessage("");
+            setErrorMessage("")
             console.log("Connected!")
-        });
+        })
         
 
         webSocketRef.current.addEventListener("message", (event) => {
-            let messageData = JSON.parse(event.data);
-            setServerMessage(messageData);
+            let messageData = JSON.parse(event.data)
+            setServerMessage(messageData)
             let messageType = messageData.messageType
             
             if(messageData.messageType === "error"){
-                console.log(messageData.payload);
-                setErrorMessage(messageData.payload);
+                console.log(messageData.payload)
+                setErrorMessage(messageData.payload)
             }
             else if(messageType == "usernameCreated" || messageType == "usernameChange") {
-                console.log("Username accepted/changed!");
-                setErrorMessage("");
-                showScreen("lobby");
+                console.log("Username accepted/changed!")
+                setErrorMessage("")
+                showScreen("lobby")
             }
         });
 
         webSocketRef.current.addEventListener("close", (event) => {
-            console.log('Websocket failed:', event);
+            console.log('Websocket failed:', event)
             setErrorMessage("Cannot connect to server.")
             webSocketRef.current = null
 
             showScreen('login')
 
-            console.log('Attempting reconnect...');
-            setTimeout(() => {createConnection();}, 1000);
+            console.log('Attempting reconnect...')
+            setTimeout(() => {createConnection();}, 1000)
         });
 
     }
@@ -72,25 +72,43 @@ function App() {
 
     function sendMessage(messageType, payload) {
         if (!webSocketRef.current || webSocketRef.current.readyState !== WebSocket.OPEN) {
-            console.error("WebSocket is not connected. Attempting to reconnect...");
+            console.error("WebSocket is not connected. Attempting to reconnect...")
             setTimeout(createConnection, 1);  // Try to reconnect
             return;
         }
         
-        const outgoingMessage = JSON.stringify({ messageType, payload });
-        webSocketRef.current.send(outgoingMessage);
+        const outgoingMessage = JSON.stringify({ messageType, payload })
+        webSocketRef.current.send(outgoingMessage)
     }
 
     return (
         <>
             {currentScreen === "login" && (
-                <Login serverMessage={serverMessage} sendMessage={sendMessage} errorMessage={errorMessage} showScreen={showScreen}/>
+                <Login 
+                    serverMessage={serverMessage}
+                    sendMessage={sendMessage}
+                    setErrorMessage={setErrorMessage}
+                    errorMessage={errorMessage}
+                    showScreen={showScreen}
+                />
             )}
             {currentScreen === "lobby" && (
-                <Lobby serverMessage={serverMessage} sendMessage={sendMessage} errorMessage={errorMessage} showScreen={showScreen}/>
+                <Lobby 
+                    serverMessage={serverMessage}
+                    sendMessage={sendMessage}
+                    setErrorMessage={setErrorMessage}
+                    errorMessage={errorMessage}
+                    showScreen={showScreen}
+                />
             )}
             {currentScreen === "game" && (
-                <Game serverMessage={serverMessage} sendMessage={sendMessage} errorMessage={errorMessage} showScreen={showScreen}/>
+                <Game 
+                    serverMessage={serverMessage}
+                    sendMessage={sendMessage}
+                    setErrorMessage={setErrorMessage}
+                    errorMessage={errorMessage}
+                    showScreen={showScreen}
+                />
             )}
         </>
     );
