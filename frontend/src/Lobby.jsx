@@ -1,16 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import './GameScreen.css';
+import './Lobby.css';
 
-function GameScreen({ serverMessage, sendMessage, errorMessage}) {
+function Lobby({ serverMessage, sendMessage, errorMessage, showScreen}) {
     const [playerList, setPlayerList] = useState([]);
 
     useEffect(() => {
         console.log(serverMessage)
-        if(serverMessage.messageType == "gameState")
-            setPlayerList(serverMessage.players)
+        let messageType = serverMessage.messageType
+        let gameStarted = serverMessage.started
+        switch(messageType){
+            case "gameState":
+                if (gameStarted) showScreen('game');
+                setPlayerList(serverMessage.players)
+        }
+        
     }, [serverMessage]); // Re-run effect when webSocketRef changes
 
-    const handleStartGame = (event) => sendMessage("startGame","")
+    const handleStartGame = (event) => {
+        sendMessage("startGame","");
+    };
 
     return (
         <div>
@@ -28,4 +36,4 @@ function GameScreen({ serverMessage, sendMessage, errorMessage}) {
     );
 }
 
-export default GameScreen;
+export default Lobby;
