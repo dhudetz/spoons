@@ -1,0 +1,61 @@
+#!/bin/bash
+
+# Function to handle cleanup and kill background processes when Ctrl+C is pressed
+cleanup() {
+    # Kill the backend or frontend process based on what was started
+    if [ -n "$backend_pid" ]; then
+        kill $backend_pid
+        wait $backend_pid
+        printf "\nBackend server stopped."
+    fi
+
+    if [ -n "$frontend_pid" ]; then
+        kill $frontend_pid
+        wait $frontend_pid
+        printf "\nFrontend server stopped."
+    fi
+
+    exit 0
+}
+
+# Trap Ctrl+C (SIGINT) and call cleanup function
+trap cleanup SIGINT
+
+# Default behavior: run both backend and frontend servers
+if [ "$1" == "backend" ]; then
+    # Start the Python server
+    echo "Starting backend server..." 
+    python3 backend/server.py &
+    backend_pid=$!  # Save the backend server's PID
+    wait $backend_pid
+
+elif [ "$1" == "frontend" ]; then
+    # Start the frontend server
+    echo "Starting frontend server..." 
+    cd frontend && npm run dev &
+    frontend_pid=$!  # Save the frontend server's PID
+    wait $frontend_pid
+
+elif [ "$1" == "both" ] || [ -z "$1" ]; then
+    # Run both backend and frontend servers
+    echo "Starting both backend and frontend servers..."
+    # Start the backend server in the background
+    python3 backend/server.py &
+    backend_pid=$!  # Save the backend server's PID
+    # Start the frontend server in the background
+    cd frontend && npm run dev &
+    frontend_pid=$!  # Save the frontend server's PID
+
+    # Wait for both to finish
+    wait $backend_pid $frontend_pid
+
+elif [ "$1" == "lint" ]; then
+    # Run ruff for linting
+    echo "Running ruff linting..."
+    ruff format .
+
+else
+    echo "Usage: ./run {backend|frontend|both|lint}"
+    exit 1
+fi
+
