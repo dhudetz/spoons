@@ -5,7 +5,6 @@ import Game from './screens/Game'
 import './App.css'
 
 function App() {
-    console.log("App rerendered.")
     const [connectionId, setConnectionId] = useState(null)
     const [serverMessage, setServerMessage] = useState("")
     const [errorMessage, setErrorMessage] = useState("")
@@ -39,7 +38,6 @@ function App() {
         webSocketRef.current.addEventListener("message", (event) => {
             let messageData = JSON.parse(event.data)
             setServerMessage(messageData)
-            console.log(messageData)
             let messageType = messageData.messageType
             
             if(messageData.messageType === "error"){

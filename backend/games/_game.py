@@ -29,7 +29,6 @@ class Game:
         self.logger = logging.getLogger("GameServer")
         self.players = players
         self.message_data = {}
-        print(broadcast_state)
         self.broadcast_state = broadcast_state
 
     @property
