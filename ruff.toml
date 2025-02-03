@@ -1,0 +1,5 @@
+# ruff.toml - Updated configuration
+
+[lint]
+extend-ignore = ["E501"]  # Ignore line length warnings
+

@@ -28,7 +28,7 @@ class SpoonsGame(Game):
     def __init__(self, players) -> None:
         super().__init__(players)
         self.spoons = 5
-        self.colors = ["♡", "♦", "♠", "♧"]
+        self.colors = ["♤", "♡", "♢", "♧"]
         self.values = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"]
         self.deck = [
             Card(value, color) for value in self.values for color in self.colors

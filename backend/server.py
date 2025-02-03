@@ -315,7 +315,6 @@ class GameServer:
             self.logger.debug(
                 f"New client connected. {connection.remote_address} Total connections: {len(self.connections)}"
             )
-
             async for message in connection:
                 await self.process_incoming_message(connection, message)
         except websockets.exceptions.ConnectionClosed as e:
