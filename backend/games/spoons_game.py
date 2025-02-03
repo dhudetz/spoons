@@ -3,13 +3,15 @@ from typing import override
 from games._game import Player, Game
 from util import Vector2
 from typing import Coroutine
+from time import time
+
+MESSAGE_COOLDOWN_MS = 0.01
 
 class Card:
     def __init__(self, value: str, color: str):
         """Initialize the Card."""
         self.value = value
         self.color = color
-
 
 class SpoonsPlayer(Player):
     @override
@@ -33,6 +35,7 @@ class SpoonsGame(Game):
     def __init__(self, broadcast_state: Coroutine, players: dict) -> None:
         """Initialize the SpoonsGame."""
         super().__init__(broadcast_state, players)
+        self.timeSinceBroadcast = 0
         self.spoons = 5
         self.colors = ["♤", "♡", "♢", "♧"]
         self.values = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"]
@@ -61,4 +64,8 @@ class SpoonsGame(Game):
         new_cursor_y = self.message_data["cursorY"]
         
         self.players[connection_id].cursor_pos.set(new_cursor_x, new_cursor_y)
-        await self.broadcast_state()
+
+        new_time = time()
+        if new_time - self.timeSinceBroadcast > MESSAGE_COOLDOWN_MS:
+            await self.broadcast_state()
+            self.timeSinceBroadcast = new_time

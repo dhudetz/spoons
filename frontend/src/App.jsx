@@ -9,7 +9,10 @@ function App() {
     const [serverMessage, setServerMessage] = useState("")
     const [errorMessage, setErrorMessage] = useState("")
     const [currentScreen, setCurrentScreen] = useState("login")
+    const [timeSinceSend, setTimeSinceSend] = useState(0)
     const webSocketRef = useRef(null)
+
+    const MESSAGE_COOLDOWN_MS = 15
 
     useEffect(() => {
         setTimeout(() => {createConnection();}, 1)
@@ -75,8 +78,12 @@ function App() {
             return;
         }
         
-        const outgoingMessage = JSON.stringify({ messageType, data })
-        webSocketRef.current.send(outgoingMessage)
+        const time = new Date().getTime();
+        if(time - timeSinceSend > MESSAGE_COOLDOWN_MS){
+            const outgoingMessage = JSON.stringify({ messageType, data })
+            webSocketRef.current.send(outgoingMessage)
+            setTimeSinceSend(time)
+        }
     }
 
     return (
