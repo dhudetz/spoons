@@ -5,6 +5,8 @@ import json
 from games.spoons_game import SpoonsPlayer, SpoonsGame
 import logging
 
+#TODO update function headers to have more specific Dict definitions
+from typing import Dict
 
 class GameServer:
     """A server that runs a Game."""
@@ -55,9 +57,7 @@ class GameServer:
             console_handler.setFormatter(formatter)
             self.logger.addHandler(console_handler)
 
-    async def attempt_create_player(
-        self, connection: ServerConnection, username: str
-    ) -> None:
+    async def attempt_create_player(self, connection: ServerConnection, username: str) -> None:
         """Create a new player if username is valid. Update game state.
 
         Args:
@@ -164,7 +164,7 @@ class GameServer:
                 connection, "Failed to start game. Not enough players!"
             )
         else:  # Start the game
-            self.game = SpoonsGame(self.players)
+            self.game = SpoonsGame(self.broadcast_game_state, self.players)
             self.logger.info("Starting game!")
             await self.broadcast_game_state()
 
@@ -186,9 +186,7 @@ class GameServer:
         await self.broadcast_game_state()
         self.logger.info("Ended game!")
 
-    async def send_error_to_user(
-        self, connection: ServerConnection, error_message: str
-    ) -> None:
+    async def send_error_to_user(self, connection: ServerConnection, error_message: str) -> None:
         """Send a error message to a specific user.
 
         Args:
@@ -203,9 +201,7 @@ class GameServer:
         else:
             self.logger.debug(f"Connection '{connection.id}' error: {error_message}")
 
-    async def send_message_to_user(
-        self, connection: ServerConnection, message_type: str, payload: str
-    ) -> None:
+    async def send_message_to_user(self, connection: ServerConnection, message_type: str, payload: str) -> None:
         """Send a message to a specific user.
 
         Args:
@@ -227,12 +223,14 @@ class GameServer:
             dictionary of the current state of the game
 
         """
+        # Get the players first for lobby info, regardless if game is started.
         game_state = {
             "players": [player.properties for player in self.players.values()]
         }
+
         game_started = False
         if self.game:
-            game_properties = self.game.get_state()
+            game_properties = self.game.state
             game_state.update(game_properties)
             game_started = True
         game_state["started"] = game_started
@@ -255,9 +253,7 @@ class GameServer:
         broadcast_message = json.dumps(message_content)
         broadcast(self.connections, broadcast_message)
 
-    async def process_game_message(
-        self, connection: ServerConnection, message: dict
-    ) -> None:
+    async def process_game_message(self, connection: ServerConnection, message: dict) -> None:
         """Process a message pertaining a player in the Game.
 
         Args:
@@ -271,11 +267,9 @@ class GameServer:
                 f"Game message received from {connection.id} without a game started."
             )
             return
-        # TODO: add game message handling
+        await self.game.handle_incoming_message(connection.id, message)
 
-    async def process_incoming_message(
-        self, connection: ServerConnection, message: dict
-    ) -> None:
+    async def process_incoming_message(self, connection: ServerConnection, message: dict) -> None:
         """Process general incoming user message.
 
         Args:
@@ -293,7 +287,7 @@ class GameServer:
             await self.send_error_to_user(connection, "Unknown message type.")
 
         if message_type == "username":
-            await self.attempt_create_player(connection, incoming_message["payload"])
+            await self.attempt_create_player(connection, incoming_message["data"])
         elif message_type == "resetUser":
             await self.remove_player(connection)
         elif message_type == "startGame":

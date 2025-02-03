@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import './Game.css';
-import ThreeScene from '../features/ThreeScene';
+import GameEnvironment from '../features/GameEnvironment';
 
 function Game({ serverMessage, sendMessage, setErrorMessage, errorMessage, showScreen }) {
+    const [gameState, setGameState] = useState("")
 
     useEffect(() => {
-        console.log(serverMessage);
         let messageType = serverMessage.messageType
         switch(messageType) {
             case "gameState":
@@ -17,7 +17,7 @@ function Game({ serverMessage, sendMessage, setErrorMessage, errorMessage, showS
         if(!gameState.started) // Game was ended
             showScreen("lobby")
         else
-            console.log(gameState)
+            setGameState(gameState)
     };
 
     const handleEndGame = (event) => {
@@ -27,7 +27,12 @@ function Game({ serverMessage, sendMessage, setErrorMessage, errorMessage, showS
     return (
         <div>
             <button onClick={handleEndGame}>End Game</button>
-            <ThreeScene />
+            <GameEnvironment 
+                gameState={gameState}
+                sendMessage={sendMessage}
+                errorMessage={errorMessage}
+                showScreen={showScreen}
+            />
         </div>
     );
 }

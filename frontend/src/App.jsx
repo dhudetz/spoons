@@ -5,7 +5,7 @@ import Game from './screens/Game'
 import './App.css'
 
 function App() {
-    console.log("app rerendered.")
+    console.log("App rerendered.")
     const [connectionId, setConnectionId] = useState(null)
     const [serverMessage, setServerMessage] = useState("")
     const [errorMessage, setErrorMessage] = useState("")
@@ -35,11 +35,11 @@ function App() {
             setErrorMessage("")
             console.log("Connected!")
         })
-        
 
         webSocketRef.current.addEventListener("message", (event) => {
             let messageData = JSON.parse(event.data)
             setServerMessage(messageData)
+            console.log(messageData)
             let messageType = messageData.messageType
             
             if(messageData.messageType === "error"){
@@ -54,10 +54,10 @@ function App() {
 
         webSocketRef.current.addEventListener("close", (event) => {
             console.log('Websocket failed:', event)
-            setErrorMessage("Cannot connect to server.")
             webSocketRef.current = null
 
             showScreen('login')
+            setErrorMessage("Cannot connect to server.")
 
             console.log('Attempting reconnect...')
             setTimeout(() => {createConnection();}, 1000)
@@ -70,14 +70,14 @@ function App() {
         setCurrentScreen(screenID)
     }
 
-    function sendMessage(messageType, payload) {
+    function sendMessage(messageType, data) {
         if (!webSocketRef.current || webSocketRef.current.readyState !== WebSocket.OPEN) {
             console.error("WebSocket is not connected. Attempting to reconnect...")
             setTimeout(createConnection, 1);  // Try to reconnect
             return;
         }
         
-        const outgoingMessage = JSON.stringify({ messageType, payload })
+        const outgoingMessage = JSON.stringify({ messageType, data })
         webSocketRef.current.send(outgoingMessage)
     }
 

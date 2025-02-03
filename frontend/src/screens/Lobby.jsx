@@ -5,7 +5,6 @@ function Lobby({ serverMessage, sendMessage, setErrorMessage, errorMessage, show
     const [playerList, setPlayerList] = useState([])
 
     useEffect(() => {
-        console.log(serverMessage)
         let messageType = serverMessage.messageType
         let gameStarted = serverMessage.started
         switch(messageType){

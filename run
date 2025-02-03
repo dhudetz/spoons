@@ -49,22 +49,8 @@ elif [ "$1" == "both" ] || [ -z "$1" ]; then
     # Wait for both to finish
     wait $backend_pid $frontend_pid
 
-elif [ "$1" == "lint" ]; then
-    # Run ruff for linting
-    echo "Running ruff linting..."
-    ruff check .
-
-elif [ "$1" == "format" ]; then
-    # Run ruff for linting first
-    echo "Running ruff linting..."
-    ruff check .
-
-    # Then run black for formatting
-    echo "Running black formatter..."
-    black .
-
 else
-    echo "Usage: ./run {backend|frontend|both|lint|format}"
+    echo "Usage: ./run {backend|frontend|both}"
     exit 1
 fi
 

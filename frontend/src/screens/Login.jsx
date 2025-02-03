@@ -6,7 +6,6 @@ function Login({ serverMessage, sendMessage, setErrorMessage, errorMessage, show
     const [username, setUsername] = useState("");
 
     useEffect(() => {
-        console.log(serverMessage)
         if(serverMessage.messageType == "gameState")
             setPlayerList(serverMessage.players)
     }, [serverMessage]);
