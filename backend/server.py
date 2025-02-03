@@ -14,7 +14,7 @@ class GameServer:
     HOST_IP = "0.0.0.0"
     HOST_PORT = "8765"
     MAX_USERNAME_LENGTH = 20
-    MIN_PLAYERS = 2
+    MIN_PLAYERS = 1
     MAX_PLAYERS = 10
 
     # Message Types

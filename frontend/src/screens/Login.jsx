@@ -15,6 +15,10 @@ function Login({ serverMessage, sendMessage, setErrorMessage, errorMessage, show
         sendMessage("username", username)
     }
 
+    const handleEndGame = (event) => { // For debugging
+        sendMessage("endGame", "")
+    };
+
     const handleUsernameChange = (event) => setUsername(event.target.value);
 
     return (
@@ -31,6 +35,7 @@ function Login({ serverMessage, sendMessage, setErrorMessage, errorMessage, show
             </form>
             <p className='error'>{errorMessage}</p>
             <button onClick={sendUsername}>Enter Game</button>
+            <button onClick={handleEndGame}>Stop Game</button>
         </div>
     );
 }

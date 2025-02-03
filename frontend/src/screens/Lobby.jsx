@@ -22,7 +22,6 @@ function Lobby({ serverMessage, sendMessage, setErrorMessage, errorMessage, show
 
     const handleBackToLobby = (event) => {
         sendMessage("resetUser","")
-        setErrorMessage("")
         showScreen("login")
     }
 

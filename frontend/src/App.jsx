@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
-import Login from './Login'
-import Lobby from './Lobby'
-import Game from './Game'
+import Login from './screens/Login'
+import Lobby from './screens/Lobby'
+import Game from './screens/Game'
 import './App.css'
 
 function App() {
@@ -48,7 +48,6 @@ function App() {
             }
             else if(messageType == "usernameCreated" || messageType == "usernameChange") {
                 console.log("Username accepted/changed!")
-                setErrorMessage("")
                 showScreen("lobby")
             }
         });
@@ -67,7 +66,8 @@ function App() {
     }
 
     function showScreen(screenID) {
-        setCurrentScreen(screenID);
+        setErrorMessage("")
+        setCurrentScreen(screenID)
     }
 
     function sendMessage(messageType, payload) {

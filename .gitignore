@@ -3,3 +3,4 @@ venv/
 **/__pycache__/
 **/.ruff_cache/
 **.swp
+node_modules/
